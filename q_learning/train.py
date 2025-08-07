@@ -1,19 +1,33 @@
 from agent import QLearningAgent
 from curriculum_env import CurriculumEnvironment
 import networkx as nx
+import pandas as pd
+import joblib
 
-# SAMPLE COURSE PREREQUISITE NETWORK
-def create_sample_cpn():
-    """Create a sample course prerequisite network"""
+import pandas as pd
+import networkx as nx
+import random
+
+def create_small_cpn():
+    """Create a small CPN with 5 courses and manual prerequisites."""
     cpn = nx.DiGraph()
     
-    courses = [f"CS{i}" for i in range(100, 400)] + [f"MATH{i}" for i in range(100, 300)]
+    # Add 5 random courses (replace with your actual course IDs)
+    courses = ["CSCI101", "MATH112", "CSCI201", "MATH201"]
     cpn.add_nodes_from(courses)
     
-    # Add some prerequisite relationships
-    for i in range(200, 300):
-        cpn.add_edge(f"CS{i}", f"CS{i+100}")
-        cpn.add_edge(f"MATH{i}", f"CS{i+100}")
+    # Define prerequisites manually
+    prerequisites = {
+        "CSCI101": [],          # No prerequisites
+        "MATH112": [],          # No prerequisites
+        "CSCI201": ["CSCI101"], # Requires CSCI101
+        "MATH201": ["MATH112"], # Requires MATH112
+    }
+    
+    # Add edges to the graph
+    for course, prereqs in prerequisites.items():
+        for prereq in prereqs:
+            cpn.add_edge(prereq, course)
     
     return cpn
 
@@ -38,11 +52,11 @@ def train_agent(env, episodes=1000):
         
         while not done:
             valid_actions = env.get_valid_actions()
-            if not valid_actions:  # No valid actions (shouldn't happen if graph is correct)
+            if not valid_actions:
                 break
                 
             action = agent.choose_action(state, valid_actions)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, info = env.step(action)
             next_valid_actions = env.get_valid_actions()
             
             agent.update(state, action, reward, next_state, next_valid_actions)
@@ -50,17 +64,28 @@ def train_agent(env, episodes=1000):
             state = next_state
             total_reward += reward
             
+            # Optional: print progress
+            if done or len(env.state) % 5 == 0:
+                print(f"Course: {action}, Predicted Grade: {info.get('predicted_grade', 'N/A'):.2f}, Reward: {reward:.2f}")
+            
         if episode % 100 == 0:
-            print(f"Episode {episode}, Total Reward: {total_reward}")
+            print(f"Episode {episode}, Total Reward: {total_reward:.2f}, Final GPA: {env.current_gpa:.2f}")
     
     return agent
 
 if __name__ == "__main__":
+    # Load grade prediction model
+    grade_predictor = joblib.load('helper/poly_reg_pipeline.pkl')
+    
+    # Load course features
+    course_features_df = pd.read_csv('helper/course_features.csv')
+    
     # Sample student profile
     student_profile = {
         'current_gpa': 3.2,
         'interests': ['AI', 'Systems'],
-        'completed_courses': []
+        'completed_courses': [],
+        'fail_rate': 0.05  # Student's historical fail rate
     }
     
     priorities = {
@@ -69,9 +94,14 @@ if __name__ == "__main__":
     }
     
     # Create environment
-    cpn = create_sample_cpn()
-    print(cpn.nodes())
-    env = CurriculumEnvironment(cpn, student_profile, priorities)
+    cpn = create_small_cpn()
+    env = CurriculumEnvironment(
+        cpn=cpn,
+        student_profile=student_profile,
+        priorities=priorities,
+        course_features_df=course_features_df,
+        grade_predictor=grade_predictor
+    )
     
     agent = train_agent(env, episodes=1000)
     
