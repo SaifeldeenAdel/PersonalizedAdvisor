@@ -1,0 +1,65 @@
+course_id,course_name,prerequisites,course_type,category,credits,track,is_compulsory,CourseCode,fail_rate,average_grade,level
+COMM401,Internship& service learning,,general,Social Sciences,3,,False,COMM,0.0,2.95432504480369,4
+CSCI101,Computer & Information skills,,core,Computer Science,3,,True,CSCI,0.0333333333333333,3.49174242424242,1
+CSCI102,Introduction to Programming,,core,Computer Science,3,,True,CSCI,0.172998643147896,2.39918588873812,1
+CSCI112,Intermediate programming,CSCI102,core,Computer Science,3,,True,CSCI,,,1
+CSCI205,Introduction to computer systems,CSCI102,core,Computer Science,3,,True,CSCI,0.0373760488176964,3.28321891685736,2
+CSCI207,Fundumentals of data structures&algo,CSCI112,core,Computer Science,3,,True,CSCI,0.172910662824207,2.19481268011527,2
+CSCI208,Analysis design of algorithms,CSCI207,core,Computer Science,3,,True,CSCI,,,2
+CSCI217,Advanced computer programming and concepts,CSCI207,core,Computer Science,3,,True,CSCI,0.074810606060606,2.7591856060606,2
+CSCI221,Logic Design,PHYS101,core,Computer Science,4,,True,CSCI,0.0739404869251578,2.93155996393147,2
+CSCI304,Analysis and design algorithms,"""CSCI207, MATH211""",core,Computer Science,3,,True,CSCI,0.0495049504950495,2.68118811881188,3
+CSCI305,Database Systems,CSCI217,core,Computer Science,3,,True,CSCI,,,3
+CSCI311,Computer architecture,CSCI221,core,Computer Science,3,,True,CSCI,0.0127272727272727,3.126,3
+CSCI313,Software Engineering,CSCI217,core,Computer Science,3,,True,CSCI,0.040764331210191,2.93210191082802,3
+CSCI315,Operating systems,CSCI311,core,Computer Science,3,,True,CSCI,0.0391872278664731,2.81625544267053,3
+CSCI322,Data analysis,MATH201,core,Computer Science,3,,True,CSCI,0.0334572490706319,2.88314745972738,3
+CSCI404,Database Systems,CSCI304,core,Computer Science,3,,True,CSCI,0.0,3.53478260869565,4
+CSCI415,Compiler Design,"""CSCI311, CSCI419""",core,Computer Science,3,,True,CSCI,0.0294117647058823,3.14264705882353,4
+CSCI417,Machine Intelligence,CSCI208,core,Computer Science,3,,True,CSCI,0.051490514905149,2.73279132791327,4
+CSCI419,Theory of computing,"""CSCI208 , MATH211""",core,Computer Science,3,,True,CSCI,0.0704041720990873,2.77913950456323,4
+CSCI451,Digital image processing,CSCI208,elective,Computer Science,3,General,False,CSCI,0.0681818181818181,2.67556818181818,4
+CSCI452,3D computer graphics and visualization,CSCI451,elective,Computer Science,3,"General, Media_Informatics",False,CSCI,0.0,3.44631578947368,4
+CSCI455,Computer vision and systems,CSCI452,elective,Computer Science,3,"General, Media_Informatics",False,CSCI,0.1875,2.1875,4
+CSCI456,Interactive multimedia systems,CSCI452,elective,Computer Science,3,"General, Media_Informatics",False,CSCI,0.0,2.95432504480369,4
+CSCI457,Mixed and augmented reality,CSCI452,elective,Computer Science,3,"General, Media_Informatics",False,CSCI,0.0,3.13529411764705,4
+CSCI458,Serious computer games,CSCI452,elective,Computer Science,3,"General, Media_Informatics",False,CSCI,0.0,2.95432504480369,4
+CSCI459,Selected topics in media informatics,,elective,Computer Science,3,Media_Informatics,False,CSCI,0.0,2.95432504480369,4
+CSCI461,Introduction to big data,"""CSCI208 , CSCI322""",elective,Computer Science,3,"Big_Data, General",False,CSCI,0.0107334525939177,3.21574239713774,4
+CSCI462,Computational intelligence,CSCI417,elective,Computer Science,3,"Big_Data, General",False,CSCI,0.027027027027027,2.55945945945946,4
+CSCI463,Introduction to computer networks,CSCI207,core,Computer Science,3,,True,CSCI,0.0043290043290043,3.40714285714285,4
+CSCI464,Numerical methods&math precision,CSCI208,elective,Computer Science,3,"Big_Data, General",False,CSCI,0.0,2.95432504480369,4
+CSCI465,Introduction to parallel computing,CSCI419,elective,Computer Science,3,"Big_Data, General",False,CSCI,0.0,3.38362573099415,4
+CSCI467,Data mining and analytics,"""CSCI305 , CSCI322""",elective,Computer Science,3,"Big_Data, General",False,CSCI,0.0149253731343283,3.09402985074626,4
+CSCI469,Selected topics in big data and data science,,elective,Computer Science,3,Big_Data,False,CSCI,0.0,3.45675675675675,4
+CSCI471,Introduction to bioinformatics,CSCI304,elective,Computer Science,3,General,False,CSCI,0.0,3.28666666666666,4
+CSCI472,Signal processing,ECEN101,elective,Computer Science,3,General,False,CSCI,0.0,3.0,4
+CSCI475,Embedded Real-Time Systems,CSCI207,elective,Computer Science,3,General,False,CSCI,0.0,2.95432504480369,4
+CSCI479,Selected topics in computer science,,elective,Computer Science,3,General,False,CSCI,0.0778443113772455,2.9814371257485,4
+CSCI490,Industrial/Research Training,,core,Computer Science,2,,True,CSCI,0.0,2.95432504480369,4
+CSCI495,Senior Project I,,core,Senior Project I,2,,True,CSCI,0.0,3.83015873015872,4
+CSCI496,Senior Project II,CSCI495,core,Senior Project II,2,,True,CSCI,0.0,3.916,4
+ECEN101,Electric Circuits,PHYS101,general,Electrical&Computer Engineering,3,,False,ECEN,0.0,2.95432504480369,1
+ENGL001,Intensive English,,general,English language,0,,False,ENGL,0.23728813559322,3.05084745762711,0
+ENGL101,English 101,,general,English language,3,,False,ENGL,0.158833063209076,3.36466774716369,1
+ENGL102,English 102,ENGL101,general,English language,3,,False,ENGL,0.0816993464052287,2.72557189542483,1
+ENGL201,Writing skills,ENGL102,general,English language,3,,False,ENGL,0.0354066985645933,3.12564593301435,2
+ENGL202,Communication&Presentation Skills,ENGL201,general,English language,3,,False,ENGL,0.0085995085995086,3.58906633906633,2
+HUMA101,"Introduction to logic , critical thinking",,general,Humanities,2,,False,HUMA,0.0,3.99375,1
+HUMA102,Introduction to ethics,,general,Humanities,1,,False,HUMA,0.0169133192389006,3.63181818181818,1
+HUMA103,Selected topics in humanities and Arts,,general,Humanities,3,,False,HUMA,0.0,2.95432504480369,1
+MATH001,Pre-Calculus Mathematics,,general,Mathematics,3,,False,MATH,1.0,0.0,0
+MATH100,Pre Calculus,,general ,Mathematics,0,,False,MATH,,,1
+MATH111,Analytical Geometry&Calculus I,,general,Mathematics,4,,False,MATH,0.185080928923293,2.0496833216045,1
+MATH112,Calculus II,MATH111,general,Mathematics,4,,False,MATH,0.145574855252274,2.14946236559139,1
+MATH201,Introduction to probability&Statistics,MATH111,general,Mathematics,3,,False,MATH,0.145470383275261,2.29024390243902,2
+MATH203,Differential equations,MATH112,general,Mathematics,4,,False,MATH,0.138919514884233,2.24840132304299,2
+MATH210,Calculus III,MATH112,general,Mathematics,3,,False,MATH,0.0872235872235872,2.58267813267813,2
+MATH211,Discrete mathematics,MATH111,general,Mathematics,3,,False,MATH,0.108601216333622,2.64934839270199,2
+MATH301,Linear Algebra,MATH112,general,Mathematics,4,,False,MATH,0.0782122905027933,2.56620111731843,3
+NSCI102,Selected topics in natural sciences,,general,Natural Sciences,3,,False,NSCI,0.0275974025974025,3.59058441558441,1
+PHYS101,Physics I,,general,Physics,4,,False,PHYS,0.182578397212543,2.11296167247386,1
+SSCI101,Selected topics in Egyptian&Arab heritage,,general,Social Sciences,3,,False,SSCI,0.0156862745098039,3.63647058823529,1
+SSCI102,Selected topics in world cultures&diversity,,general,Social Sciences,3,,False,SSCI,0.0043103448275862,3.79094827586206,1
+SSCI103,Selected topics in social sciences,,general,Social Sciences,3,,False,SSCI,0.0754716981132075,3.24150943396226,1
+SSCI105,Fundumentals of data structures&algo,,general,Social Sciences,3,,False,SSCI,,,1

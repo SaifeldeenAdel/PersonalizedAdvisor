@@ -1,0 +1,577 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+                <link href="lib/tom-select/tom-select.css" rel="stylesheet">
+                <script src="lib/tom-select/tom-select.complete.min.js"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 1000px;
+                 background-color: #fafafa;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+    <div style="position: absolute; top: 60px; left: 10px; z-index: 1000; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-family: Arial, sans-serif;">
+        <h3 style="margin-top: 0; color: #333;">Course Network Explorer</h3>
+        <div style="margin-top: 20px; margin-bottom: 10px;">
+            <label for="trackFilter" style="display: block; margin-bottom: 5px; font-weight: bold;">Filter by Track:</label>
+            <select id="trackFilter" style="width: 100%; padding: 5px;" onchange="filterByTrack(this.value)">
+                <option value="All">All Tracks</option>
+                <option value="Big_Data">Big_Data</option><option value="General">General</option><option value="Media_Informatics">Media_Informatics</option>
+            </select>
+        </div>
+    </div>
+    
+    <script>
+    function filterByTrack(selectedTrack) {
+        // Get all nodes and edges
+        var allNodes = nodes.get();
+        var allEdges = edges.get();
+        
+        if (selectedTrack === "All") {
+            // Show all nodes and edges
+            allNodes.forEach(function(node) {
+                node.hidden = false;
+            });
+            allEdges.forEach(function(edge) {
+                edge.hidden = false;
+            });
+        } else {
+            // Filter nodes by track
+            allNodes.forEach(function(node) {
+                node.hidden = (node.group !== selectedTrack && node.group !== "None");
+            });
+            
+            // Filter edges to only show those between visible nodes
+            var visibleNodeIds = allNodes.filter(function(node) {
+                return !node.hidden;
+            }).map(function(node) {
+                return node.id;
+            });
+            
+            allEdges.forEach(function(edge) {
+                edge.hidden = !(visibleNodeIds.includes(edge.from) && visibleNodeIds.includes(edge.to));
+            });
+        }
+        
+        // Update the visualization
+        nodes.update(allNodes);
+        edges.update(allEdges);
+        network.redraw();
+    }
+    
+    // Click to show connections (keeping original colors)
+    network.on("click", function(params) {
+        if (params.nodes.length > 0) {
+            var nodeId = params.nodes[0];
+            var connectedNodes = network.getConnectedNodes(nodeId);
+            var connectedEdges = network.getConnectedEdges(nodeId);
+            
+            // First hide all nodes and edges
+            nodes.update(nodes.get().map(function(n) {
+                n.hidden = true;
+                return n;
+            }));
+            edges.update(edges.get().map(function(e) {
+                e.hidden = true;
+                return e;
+            }));
+            
+            // Show selected node
+            nodes.update({
+                id: nodeId,
+                hidden: false
+            });
+            
+            // Show connected nodes
+            connectedNodes.forEach(function(connectedNodeId) {
+                nodes.update({
+                    id: connectedNodeId,
+                    hidden: false
+                });
+            });
+            
+            // Show connecting edges
+            connectedEdges.forEach(function(edgeId) {
+                edges.update({
+                    id: edgeId,
+                    hidden: false
+                });
+            });
+        } else {
+            // Click on empty space shows everything
+            nodes.update(nodes.get().map(function(n) {
+                n.hidden = false;
+                return n;
+            }));
+            edges.update(edges.get().map(function(e) {
+                e.hidden = false;
+                return e;
+            }));
+        }
+    });
+    </script>
+    
+        <div class="card" style="width: 100%">
+            
+                <div id="select-menu" class="card-header">
+                    <div class="row no-gutters">
+                        <div class="col-10 pb-2">
+                            <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="selectNode([value]);"
+                            id="select-node"
+                            placeholder="Select node..."
+                            >
+                                <option selected>Select a Node by ID</option>
+                                
+                                    <option value="COMM401">COMM401</option>
+                                
+                                    <option value="CSCI101">CSCI101</option>
+                                
+                                    <option value="CSCI102">CSCI102</option>
+                                
+                                    <option value="CSCI112">CSCI112</option>
+                                
+                                    <option value="CSCI205">CSCI205</option>
+                                
+                                    <option value="CSCI207">CSCI207</option>
+                                
+                                    <option value="CSCI208">CSCI208</option>
+                                
+                                    <option value="CSCI217">CSCI217</option>
+                                
+                                    <option value="CSCI221">CSCI221</option>
+                                
+                                    <option value="CSCI304">CSCI304</option>
+                                
+                                    <option value="CSCI305">CSCI305</option>
+                                
+                                    <option value="CSCI311">CSCI311</option>
+                                
+                                    <option value="CSCI313">CSCI313</option>
+                                
+                                    <option value="CSCI315">CSCI315</option>
+                                
+                                    <option value="CSCI322">CSCI322</option>
+                                
+                                    <option value="CSCI404">CSCI404</option>
+                                
+                                    <option value="CSCI415">CSCI415</option>
+                                
+                                    <option value="CSCI417">CSCI417</option>
+                                
+                                    <option value="CSCI419">CSCI419</option>
+                                
+                                    <option value="CSCI451_General">CSCI451_General</option>
+                                
+                                    <option value="CSCI452_General">CSCI452_General</option>
+                                
+                                    <option value="CSCI452_Media_Informatics">CSCI452_Media_Informatics</option>
+                                
+                                    <option value="CSCI455_General">CSCI455_General</option>
+                                
+                                    <option value="CSCI455_Media_Informatics">CSCI455_Media_Informatics</option>
+                                
+                                    <option value="CSCI456_General">CSCI456_General</option>
+                                
+                                    <option value="CSCI456_Media_Informatics">CSCI456_Media_Informatics</option>
+                                
+                                    <option value="CSCI457_General">CSCI457_General</option>
+                                
+                                    <option value="CSCI457_Media_Informatics">CSCI457_Media_Informatics</option>
+                                
+                                    <option value="CSCI458_General">CSCI458_General</option>
+                                
+                                    <option value="CSCI458_Media_Informatics">CSCI458_Media_Informatics</option>
+                                
+                                    <option value="CSCI459_Media_Informatics">CSCI459_Media_Informatics</option>
+                                
+                                    <option value="CSCI461_Big_Data">CSCI461_Big_Data</option>
+                                
+                                    <option value="CSCI461_General">CSCI461_General</option>
+                                
+                                    <option value="CSCI462_Big_Data">CSCI462_Big_Data</option>
+                                
+                                    <option value="CSCI462_General">CSCI462_General</option>
+                                
+                                    <option value="CSCI463">CSCI463</option>
+                                
+                                    <option value="CSCI464_Big_Data">CSCI464_Big_Data</option>
+                                
+                                    <option value="CSCI464_General">CSCI464_General</option>
+                                
+                                    <option value="CSCI465_Big_Data">CSCI465_Big_Data</option>
+                                
+                                    <option value="CSCI465_General">CSCI465_General</option>
+                                
+                                    <option value="CSCI467_Big_Data">CSCI467_Big_Data</option>
+                                
+                                    <option value="CSCI467_General">CSCI467_General</option>
+                                
+                                    <option value="CSCI469_Big_Data">CSCI469_Big_Data</option>
+                                
+                                    <option value="CSCI471_General">CSCI471_General</option>
+                                
+                                    <option value="CSCI472_General">CSCI472_General</option>
+                                
+                                    <option value="CSCI475_General">CSCI475_General</option>
+                                
+                                    <option value="CSCI479_General">CSCI479_General</option>
+                                
+                                    <option value="CSCI490">CSCI490</option>
+                                
+                                    <option value="CSCI495">CSCI495</option>
+                                
+                                    <option value="CSCI496">CSCI496</option>
+                                
+                                    <option value="ECEN101">ECEN101</option>
+                                
+                                    <option value="ENGL001">ENGL001</option>
+                                
+                                    <option value="ENGL101">ENGL101</option>
+                                
+                                    <option value="ENGL102">ENGL102</option>
+                                
+                                    <option value="ENGL201">ENGL201</option>
+                                
+                                    <option value="ENGL202">ENGL202</option>
+                                
+                                    <option value="HUMA101">HUMA101</option>
+                                
+                                    <option value="HUMA102">HUMA102</option>
+                                
+                                    <option value="HUMA103">HUMA103</option>
+                                
+                                    <option value="MATH001">MATH001</option>
+                                
+                                    <option value="MATH100">MATH100</option>
+                                
+                                    <option value="MATH111">MATH111</option>
+                                
+                                    <option value="MATH112">MATH112</option>
+                                
+                                    <option value="MATH201">MATH201</option>
+                                
+                                    <option value="MATH203">MATH203</option>
+                                
+                                    <option value="MATH210">MATH210</option>
+                                
+                                    <option value="MATH211">MATH211</option>
+                                
+                                    <option value="MATH301">MATH301</option>
+                                
+                                    <option value="NSCI102">NSCI102</option>
+                                
+                                    <option value="PHYS101">PHYS101</option>
+                                
+                                    <option value="SSCI101">SSCI101</option>
+                                
+                                    <option value="SSCI102">SSCI102</option>
+                                
+                                    <option value="SSCI103">SSCI103</option>
+                                
+                                    <option value="SSCI105">SSCI105</option>
+                                
+                            </select>
+                        </div>
+                        <div class="col-2 pb-2">
+                            <button type="button" class="btn btn-primary btn-block" onclick="neighbourhoodHighlight({nodes: []});">Reset Selection</button>
+                        </div>
+                    </div>
+                </div>
+            
+            
+              <div id="filter-menu" class="card-header">
+                <div class="row no-gutters">
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'item')"
+                            id="select-item"
+                        >
+                        <option value="">Select a network item</option>
+                        <option value="edge">edge</option>
+                        <option value="node">node</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            onchange="updateFilter(value, 'property')"
+                            id="select-property"
+                        >
+                        <option value="">Select a property...</option>
+                    </select>
+                  </div>
+                  <div class="col-3 pb-2">
+                    <select
+                            class="form-select"
+                            aria-label="Default select example"
+                            id="select-value"
+                        >
+                        <option value="">Select value(s)...</option>
+                    </select>
+                  </div>
+                  <div class="col-1 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="highlightFilter(filter);">Filter</button>
+                  </div>
+                  <div class="col-2 pb-2">
+                    <button type="button" class="btn btn-primary btn-block" onclick="clearFilter(true)">Reset Selection</button>
+                  </div>
+                </div>
+              </div>
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+                  new TomSelect("#select-node",{
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      }
+                  });
+              
+
+              
+                  // explicitly using onItemAdd and this function as we need to save multiple values
+                  let updateValueFilter = function() {
+                      return function () {
+                      filter['value'].push(arguments[0])
+                      }
+                  }
+
+                  let valueControl = new TomSelect("#select-value",{
+                      maxItems: null,
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: updateValueFilter()
+                  });
+
+                  let addValues = function() {
+                      return function () {
+                          // clear the current value options and add the selected attribute values
+                          // tom-select handles duplicates
+                          let selectedProperty = arguments[0];
+                          valueControl.clear();
+                          valueControl.clearOptions();
+                          filter['value'] = []
+                          if (filter['item'] === 'node') {
+                              for (let each in allNodes) {
+                                  valueControl.addOption({
+                                      id:allNodes[each][selectedProperty],
+                                      title:allNodes[each][selectedProperty]
+                                  })
+                              }
+                          }
+                          else if (filter['item'] === 'edge') {
+                              for (let each in allEdges) {
+                                  valueControl.addOption({
+                                      id:allEdges[each][selectedProperty],
+                                      title:allEdges[each][selectedProperty]
+                                  })
+                              }
+                          }
+                      }
+                  };
+
+                  let propControl = new TomSelect("#select-property",{
+                      valueField: 'id',
+                      labelField: 'title',
+                      searchField: 'title',
+                      create: false,
+                      sortField: {
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addValues()
+                  });
+
+                  let addProperties = function() {
+                      return function () {
+                          // loops through the selected network item and adds the attributes to dropdown
+                          // tom-select handles duplicates
+                          clearFilter(false)
+                          if (arguments[0] === 'edge') {
+                              for (let each in allEdges) {
+                                  if (allEdges.hasOwnProperty(each)) {
+                                      for (let eachProp in allEdges[each]) {
+                                          if (allEdges[each].hasOwnProperty(eachProp)) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                          else if (arguments[0] === 'node') {
+                              for (let each in allNodes) {
+                                  if (allNodes.hasOwnProperty(each)) {
+                                      for (let eachProp in allNodes[each]) {
+                                          if (allNodes[each].hasOwnProperty(eachProp)
+                                              && (eachProp !== 'hidden' && eachProp !== 'savedLabel'
+                                                  && eachProp !== 'hiddenLabel')) {
+                                              propControl.addOption({id: eachProp, title: eachProp})
+
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  };
+
+                  let itemControl = new TomSelect("#select-item",{
+                      create: false,
+                      sortField:{
+                          field: "text",
+                          direction: "asc"
+                      },
+                      onItemAdd: addProperties()
+                  });
+
+                  function clearFilter(reset) {
+                      // utility function to clear all the selected filter options
+                      // if reset is set to true, the existing filter will be removed
+                      // else, only the dropdown options are cleared
+                      propControl.clear();
+                      propControl.clearOptions();
+                      valueControl.clear();
+                      valueControl.clearOptions();
+                      filter = {
+                          item : '',
+                          property : '',
+                          value : []
+                      }
+                      if (reset) {
+                          itemControl.clear();
+                          filterHighlight({nodes: []})
+                      }
+                  }
+
+                  function updateFilter(value, key) {
+                      // key could be 'item' or 'property' and value is as selected in dropdown
+                      filter[key] = value
+                  }
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "COMM401", "label": "COMM401\nInternship\u0026 service learning", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eInternship\u0026 service learning (COMM401)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI101", "label": "CSCI101\nComputer \u0026 Information skills", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eComputer \u0026 Information skills (CSCI101)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI102", "label": "CSCI102\nIntroduction to Programming", "level": 1, "shape": "dot", "size": 25.9861228866811, "title": "\u003cb\u003eIntroduction to Programming (CSCI102)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI112", "label": "CSCI112\nIntermediate programming", "level": 2, "shape": "dot", "size": 24.733814958696726, "title": "\u003cb\u003eIntermediate programming (CSCI112)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0065\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI205", "label": "CSCI205\nIntroduction to computer systems", "level": 2, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to computer systems (CSCI205)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI207", "label": "CSCI207\nFundumentals of data structures\u0026algo", "level": 3, "shape": "dot", "size": 34.817884367202154, "title": "\u003cb\u003eFundumentals of data structures\u0026algo (CSCI207)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 5\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0126\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI208", "label": "CSCI208\nAnalysis design of algorithms", "level": 4, "shape": "dot", "size": 37.25240416635499, "title": "\u003cb\u003eAnalysis design of algorithms (CSCI208)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 7\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0126\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI217", "label": "CSCI217\nAdvanced computer programming and concepts", "level": 4, "shape": "dot", "size": 26.71958936080072, "title": "\u003cb\u003eAdvanced computer programming and concepts (CSCI217)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0023\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI221", "label": "CSCI221\nLogic Design", "level": 2, "shape": "dot", "size": 22.212863472318915, "title": "\u003cb\u003eLogic Design (CSCI221)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0006\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI304", "label": "CSCI304\nAnalysis and design algorithms", "level": 4, "shape": "dot", "size": 26.60102026956322, "title": "\u003cb\u003eAnalysis and design algorithms (CSCI304)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0019\u003cbr\u003eCloseness: 0.0381"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI305", "label": "CSCI305\nDatabase Systems", "level": 5, "shape": "dot", "size": 26.481028429109735, "title": "\u003cb\u003eDatabase Systems (CSCI305)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0015\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI311", "label": "CSCI311\nComputer architecture", "level": 3, "shape": "dot", "size": 26.236636989190103, "title": "\u003cb\u003eComputer architecture (CSCI311)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0008\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI313", "label": "CSCI313\nSoftware Engineering", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSoftware Engineering (CSCI313)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI315", "label": "CSCI315\nOperating systems", "level": 4, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eOperating systems (CSCI315)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI322", "label": "CSCI322\nData analysis", "level": 3, "shape": "dot", "size": 31.39425166861765, "title": "\u003cb\u003eData analysis (CSCI322)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 4\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0015\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI404", "label": "CSCI404\nDatabase Systems", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eDatabase Systems (CSCI404)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0329"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI415", "label": "CSCI415\nCompiler Design", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eCompiler Design (CSCI415)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0527"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI417", "label": "CSCI417\nMachine Intelligence", "level": 5, "shape": "dot", "size": 26.481028429109735, "title": "\u003cb\u003eMachine Intelligence (CSCI417)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0015\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI419", "label": "CSCI419\nTheory of computing", "level": 5, "shape": "dot", "size": 29.684423327288897, "title": "\u003cb\u003eTheory of computing (CSCI419)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 3\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0034\u003cbr\u003eCloseness: 0.0379"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI451_General", "label": "CSCI451\nDigital image processing", "level": 5, "shape": "dot", "size": 28.246941875039997, "title": "\u003cb\u003eDigital image processing (CSCI451)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0076\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI452_General", "label": "CSCI452\n3D computer graphics and visualization", "level": 6, "shape": "dot", "size": 37.386349324776326, "title": "\u003cb\u003e3D computer graphics and visualization (CSCI452)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 8\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0038\u003cbr\u003eCloseness: 0.0228"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI452_Media_Informatics", "label": "CSCI452\n3D computer graphics and visualization", "level": 6, "shape": "dot", "size": 37.386349324776326, "title": "\u003cb\u003e3D computer graphics and visualization (CSCI452)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 8\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0038\u003cbr\u003eCloseness: 0.0228"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI455_General", "label": "CSCI455\nComputer vision and systems", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eComputer vision and systems (CSCI455)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI455_Media_Informatics", "label": "CSCI455\nComputer vision and systems", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eComputer vision and systems (CSCI455)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI456_General", "label": "CSCI456\nInteractive multimedia systems", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eInteractive multimedia systems (CSCI456)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI456_Media_Informatics", "label": "CSCI456\nInteractive multimedia systems", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eInteractive multimedia systems (CSCI456)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI457_General", "label": "CSCI457\nMixed and augmented reality", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eMixed and augmented reality (CSCI457)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI457_Media_Informatics", "label": "CSCI457\nMixed and augmented reality", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eMixed and augmented reality (CSCI457)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI458_General", "label": "CSCI458\nSerious computer games", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSerious computer games (CSCI458)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI458_Media_Informatics", "label": "CSCI458\nSerious computer games", "level": 7, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSerious computer games (CSCI458)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 7\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0305"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Media_Informatics", "id": "CSCI459_Media_Informatics", "label": "CSCI459\nSelected topics in media informatics", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in media informatics (CSCI459)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Media_Informatics\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI461_Big_Data", "label": "CSCI461\nIntroduction to big data", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to big data (CSCI461)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0420"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI461_General", "label": "CSCI461\nIntroduction to big data", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to big data (CSCI461)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0420"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI462_Big_Data", "label": "CSCI462\nComputational intelligence", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eComputational intelligence (CSCI462)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0228"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI462_General", "label": "CSCI462\nComputational intelligence", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eComputational intelligence (CSCI462)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0228"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI463", "label": "CSCI463\nIntroduction to computer networks", "level": 4, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to computer networks (CSCI463)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI464_Big_Data", "label": "CSCI464\nNumerical methods\u0026math precision", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eNumerical methods\u0026math precision (CSCI464)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI464_General", "label": "CSCI464\nNumerical methods\u0026math precision", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eNumerical methods\u0026math precision (CSCI464)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0219"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI465_Big_Data", "label": "CSCI465\nIntroduction to parallel computing", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to parallel computing (CSCI465)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0336"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI465_General", "label": "CSCI465\nIntroduction to parallel computing", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to parallel computing (CSCI465)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0336"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI467_Big_Data", "label": "CSCI467\nData mining and analytics", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eData mining and analytics (CSCI467)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0417"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI467_General", "label": "CSCI467\nData mining and analytics", "level": 6, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eData mining and analytics (CSCI467)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 6\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0417"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "Big_Data", "id": "CSCI469_Big_Data", "label": "CSCI469\nSelected topics in big data and data science", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in big data and data science (CSCI469)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: Big_Data\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI471_General", "label": "CSCI471\nIntroduction to bioinformatics", "level": 5, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to bioinformatics (CSCI471)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 5\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0329"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI472_General", "label": "CSCI472\nSignal processing", "level": 3, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSignal processing (CSCI472)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI475_General", "label": "CSCI475\nEmbedded Real-Time Systems", "level": 4, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eEmbedded Real-Time Systems (CSCI475)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "General", "id": "CSCI479_General", "label": "CSCI479\nSelected topics in computer science", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in computer science (CSCI479)\u003c/b\u003e\u003cbr\u003eType: Elective\u003cbr\u003eTrack: General\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI490", "label": "CSCI490\nIndustrial/Research Training", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIndustrial/Research Training (CSCI490)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 2\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI495", "label": "CSCI495\nSenior Project I", "level": 1, "shape": "dot", "size": 21.931471805599454, "title": "\u003cb\u003eSenior Project I (CSCI495)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 2\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "CSCI496", "label": "CSCI496\nSenior Project II", "level": 2, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSenior Project II (CSCI496)\u003c/b\u003e\u003cbr\u003eType: Core\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 2\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ECEN101", "label": "ECEN101\nElectric Circuits", "level": 2, "shape": "dot", "size": 22.02615155093184, "title": "\u003cb\u003eElectric Circuits (ECEN101)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0002\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ENGL001", "label": "ENGL001\nIntensive English", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntensive English (ENGL001)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 0\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ENGL101", "label": "ENGL101\nEnglish 101", "level": 1, "shape": "dot", "size": 21.931471805599454, "title": "\u003cb\u003eEnglish 101 (ENGL101)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ENGL102", "label": "ENGL102\nEnglish 102", "level": 2, "shape": "dot", "size": 22.11994327206562, "title": "\u003cb\u003eEnglish 102 (ENGL102)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0004\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ENGL201", "label": "ENGL201\nWriting skills", "level": 3, "shape": "dot", "size": 22.11994327206562, "title": "\u003cb\u003eWriting skills (ENGL201)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0004\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "ENGL202", "label": "ENGL202\nCommunication\u0026Presentation Skills", "level": 4, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eCommunication\u0026Presentation Skills (ENGL202)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 4\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0205"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "HUMA101", "label": "HUMA101\nIntroduction to logic , critical thinking", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to logic , critical thinking (HUMA101)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 2\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "HUMA102", "label": "HUMA102\nIntroduction to ethics", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eIntroduction to ethics (HUMA102)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 1\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "HUMA103", "label": "HUMA103\nSelected topics in humanities and Arts", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in humanities and Arts (HUMA103)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH001", "label": "MATH001\nPre-Calculus Mathematics", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003ePre-Calculus Mathematics (MATH001)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH100", "label": "MATH100\nPre Calculus", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003ePre Calculus (MATH100)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 0\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH111", "label": "MATH111\nAnalytical Geometry\u0026Calculus I", "level": 1, "shape": "dot", "size": 28.862943611198908, "title": "\u003cb\u003eAnalytical Geometry\u0026Calculus I (MATH111)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 3\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH112", "label": "MATH112\nCalculus II", "level": 2, "shape": "dot", "size": 29.00462917778205, "title": "\u003cb\u003eCalculus II (MATH112)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 3\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0006\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH201", "label": "MATH201\nIntroduction to probability\u0026Statistics", "level": 2, "shape": "dot", "size": 22.396153060980517, "title": "\u003cb\u003eIntroduction to probability\u0026Statistics (MATH201)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 1\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0010\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH203", "label": "MATH203\nDifferential equations", "level": 3, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eDifferential equations (MATH203)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH210", "label": "MATH210\nCalculus III", "level": 3, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eCalculus III (MATH210)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH211", "label": "MATH211\nDiscrete mathematics", "level": 2, "shape": "dot", "size": 26.42048822725349, "title": "\u003cb\u003eDiscrete mathematics (MATH211)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 2\u003cbr\u003eBetweenness: 0.0013\u003cbr\u003eCloseness: 0.0137"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "MATH301", "label": "MATH301\nLinear Algebra", "level": 3, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eLinear Algebra (MATH301)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 3\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0183"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "NSCI102", "label": "NSCI102\nSelected topics in natural sciences", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in natural sciences (NSCI102)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "PHYS101", "label": "PHYS101\nPhysics I", "level": 1, "shape": "dot", "size": 25.9861228866811, "title": "\u003cb\u003ePhysics I (PHYS101)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 4\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 2\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "SSCI101", "label": "SSCI101\nSelected topics in Egyptian\u0026Arab heritage", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in Egyptian\u0026Arab heritage (SSCI101)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "SSCI102", "label": "SSCI102\nSelected topics in world cultures\u0026diversity", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in world cultures\u0026diversity (SSCI102)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "SSCI103", "label": "SSCI103\nSelected topics in social sciences", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eSelected topics in social sciences (SSCI103)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}, {"borderWidth": 1, "font": {"color": "#333"}, "group": "None", "id": "SSCI105", "label": "SSCI105\nFundumentals of data structures\u0026algo", "level": 1, "shape": "dot", "size": 15.0, "title": "\u003cb\u003eFundumentals of data structures\u0026algo (SSCI105)\u003c/b\u003e\u003cbr\u003eType: General\u003cbr\u003eTrack: None\u003cbr\u003eCredits: 3\u003cbr\u003eStatus: Elective\u003cbr\u003eOut Degree: 0\u003cbr\u003eLevel: 1\u003cbr\u003eBetweenness: 0.0000\u003cbr\u003eCloseness: 0.0000"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#7f8c8d", "from": "CSCI102", "smooth": {"type": "continuous"}, "to": "CSCI112"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI102", "smooth": {"type": "continuous"}, "to": "CSCI205"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI112", "smooth": {"type": "continuous"}, "to": "CSCI207"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI207", "smooth": {"type": "continuous"}, "to": "CSCI208"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI207", "smooth": {"type": "continuous"}, "to": "CSCI217"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI207", "smooth": {"type": "continuous"}, "to": "CSCI304"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI207", "smooth": {"type": "continuous"}, "to": "CSCI463"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI207", "smooth": {"type": "continuous"}, "to": "CSCI475_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI417"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI419"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI451_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI461_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI461_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI464_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI208", "smooth": {"type": "continuous"}, "to": "CSCI464_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI217", "smooth": {"type": "continuous"}, "to": "CSCI305"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI217", "smooth": {"type": "continuous"}, "to": "CSCI313"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI221", "smooth": {"type": "continuous"}, "to": "CSCI311"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI304", "smooth": {"type": "continuous"}, "to": "CSCI404"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI304", "smooth": {"type": "continuous"}, "to": "CSCI471_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI305", "smooth": {"type": "continuous"}, "to": "CSCI467_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI305", "smooth": {"type": "continuous"}, "to": "CSCI467_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI311", "smooth": {"type": "continuous"}, "to": "CSCI315"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI311", "smooth": {"type": "continuous"}, "to": "CSCI415"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI322", "smooth": {"type": "continuous"}, "to": "CSCI461_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI322", "smooth": {"type": "continuous"}, "to": "CSCI461_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI322", "smooth": {"type": "continuous"}, "to": "CSCI467_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI322", "smooth": {"type": "continuous"}, "to": "CSCI467_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI417", "smooth": {"type": "continuous"}, "to": "CSCI462_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI417", "smooth": {"type": "continuous"}, "to": "CSCI462_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI419", "smooth": {"type": "continuous"}, "to": "CSCI415"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI419", "smooth": {"type": "continuous"}, "to": "CSCI465_Big_Data"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI419", "smooth": {"type": "continuous"}, "to": "CSCI465_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI451_General", "smooth": {"type": "continuous"}, "to": "CSCI452_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI451_General", "smooth": {"type": "continuous"}, "to": "CSCI452_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI455_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI455_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI456_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI456_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI457_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI457_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI458_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_General", "smooth": {"type": "continuous"}, "to": "CSCI458_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI455_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI455_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI456_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI456_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI457_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI457_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI458_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI452_Media_Informatics", "smooth": {"type": "continuous"}, "to": "CSCI458_Media_Informatics"}, {"arrows": "to", "color": "#7f8c8d", "from": "CSCI495", "smooth": {"type": "continuous"}, "to": "CSCI496"}, {"arrows": "to", "color": "#7f8c8d", "from": "ECEN101", "smooth": {"type": "continuous"}, "to": "CSCI472_General"}, {"arrows": "to", "color": "#7f8c8d", "from": "ENGL101", "smooth": {"type": "continuous"}, "to": "ENGL102"}, {"arrows": "to", "color": "#7f8c8d", "from": "ENGL102", "smooth": {"type": "continuous"}, "to": "ENGL201"}, {"arrows": "to", "color": "#7f8c8d", "from": "ENGL201", "smooth": {"type": "continuous"}, "to": "ENGL202"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH111", "smooth": {"type": "continuous"}, "to": "MATH112"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH111", "smooth": {"type": "continuous"}, "to": "MATH201"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH111", "smooth": {"type": "continuous"}, "to": "MATH211"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH112", "smooth": {"type": "continuous"}, "to": "MATH203"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH112", "smooth": {"type": "continuous"}, "to": "MATH210"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH112", "smooth": {"type": "continuous"}, "to": "MATH301"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH201", "smooth": {"type": "continuous"}, "to": "CSCI322"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH211", "smooth": {"type": "continuous"}, "to": "CSCI304"}, {"arrows": "to", "color": "#7f8c8d", "from": "MATH211", "smooth": {"type": "continuous"}, "to": "CSCI419"}, {"arrows": "to", "color": "#7f8c8d", "from": "PHYS101", "smooth": {"type": "continuous"}, "to": "CSCI221"}, {"arrows": "to", "color": "#7f8c8d", "from": "PHYS101", "smooth": {"type": "continuous"}, "to": "ECEN101"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {"physics": {"hierarchicalRepulsion": {"centralGravity": 0, "springLength": 150, "springConstant": 0.01, "nodeDistance": 120, "damping": 0.09}, "minVelocity": 0.75, "solver": "hierarchicalRepulsion", "hierarchical": {"enabled": true, "levelSeparation": 200, "direction": "LR", "sortMethod": "directed", "nodeSpacing": 100}}, "nodes": {"scaling": {"min": 10, "max": 50}, "shadow": {"enabled": true}}, "edges": {"smooth": {"type": "continuous"}, "color": {"inherit": false}}, "interaction": {"hover": true, "multiselect": true, "navigationButtons": true, "hideEdgesOnDrag": false, "hideNodesOnDrag": false}};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+                    network.on("selectNode", neighbourhoodHighlight);
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
